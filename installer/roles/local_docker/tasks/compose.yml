@@ -14,6 +14,7 @@
     - credentials.py
     - docker-compose.yml
     - nginx.conf
+    - AWXWebDockerfile
   register: awx_compose_config
 
 - name: Render SECRET_KEY file
