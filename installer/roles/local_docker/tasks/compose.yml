@@ -15,6 +15,7 @@
     - docker-compose.yml
     - nginx.conf
     - AWXWebDockerfile
+    - AWXTaskDockerfile
   register: awx_compose_config
 
 - name: Render SECRET_KEY file

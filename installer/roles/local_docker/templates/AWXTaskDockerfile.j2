@@ -1,0 +1,5 @@
+FROM {{ awx_task_docker_actual_image }}
+
+COPY environment.sh /etc/tower/conf.d/environment.sh
+COPY credentials.py /etc/tower/conf.d/credentials.PY
+COPY SECRET_KEY /etc/tower/SECRET_KEY

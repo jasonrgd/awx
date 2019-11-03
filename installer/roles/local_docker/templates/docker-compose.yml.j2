@@ -22,6 +22,7 @@ services:
     user: root
     restart: unless-stopped
     {% if project_data_dir is defined %}
+      volumes:
       - "{{ project_data_dir +':/var/lib/awx/projects:rw' }}"
     {% endif %}
     {% if custom_venv_dir is defined %}
@@ -55,9 +56,16 @@ services:
       http_proxy: {{ http_proxy | default('') }}
       https_proxy: {{ https_proxy | default('') }}
       no_proxy: {{ no_proxy | default('') }}
+      DATABASE_NAME: {{ pg_database }}
+      DATABASE_USER: {{ pg_username }}
+      DATABASE_PASSWORD: {{ pg_password }}
+      DATABASE_HOST: postgres
+      DATABASE_PORT: {{ pg_port }}
 
   task:
-    image: {{ awx_task_docker_actual_image }}
+    build: 
+      context: {{ docker_compose_dir }}
+      dockerfile: AWXTaskDockerfile
     container_name: awx_task
     depends_on:
       - rabbitmq
@@ -69,11 +77,8 @@ services:
     hostname: {{ awx_task_hostname }}
     user: root
     restart: unless-stopped
-    volumes:
-      - "{{ docker_compose_dir }}/SECRET_KEY:/etc/tower/SECRET_KEY"
-      - "{{ docker_compose_dir }}/environment.sh:/etc/tower/conf.d/environment.sh"
-      - "{{ docker_compose_dir }}/credentials.py:/etc/tower/conf.d/credentials.py"
     {% if project_data_dir is defined %}
+      volumes:
       - "{{ project_data_dir +':/var/lib/awx/projects:rw' }}"
     {% endif %}
     {% if custom_venv_dir is defined %}
@@ -107,6 +112,11 @@ services:
       http_proxy: {{ http_proxy | default('') }}
       https_proxy: {{ https_proxy | default('') }}
       no_proxy: {{ no_proxy | default('') }}
+      DATABASE_NAME: {{ pg_database }}
+      DATABASE_USER: {{ pg_username }}
+      DATABASE_PASSWORD: {{ pg_password }}
+      DATABASE_HOST: postgres
+      DATABASE_PORT: {{ pg_port }}
 
   rabbitmq:
     image: {{ rabbitmq_image }}
@@ -121,6 +131,7 @@ services:
       https_proxy: {{ https_proxy | default('') }}
       no_proxy: {{ no_proxy | default('') }}
 
+
   memcached:
     image: "{{ memcached_image }}:{{ memcached_version }}"
     container_name: awx_memcached
@@ -129,6 +140,11 @@ services:
       http_proxy: {{ http_proxy | default('') }}
       https_proxy: {{ https_proxy | default('') }}
       no_proxy: {{ no_proxy | default('') }}
+      DATABASE_NAME: {{ pg_database }}
+      DATABASE_USER: {{ pg_username }}
+      DATABASE_PASSWORD: {{ pg_password }}
+      DATABASE_HOST: postgres
+      DATABASE_PORT: {{ pg_port }}
 
   {% if pg_hostname is not defined %}
   postgres:
@@ -137,6 +153,8 @@ services:
     restart: unless-stopped
     volumes:
       - {{ postgres_data_dir }}/10/data/:/var/lib/postgresql/data/pgdata:Z
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_USER: {{ pg_username }}
       POSTGRES_PASSWORD: {{ pg_password }}
